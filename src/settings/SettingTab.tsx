@@ -62,6 +62,13 @@ function getNotificationCenter() {
 }
 
 function deepMerge<T>(base: T, patch: Partial<T>): T {
+  if (Array.isArray(base) || Array.isArray(patch)) {
+    if (Array.isArray(base) && Array.isArray(patch)) {
+      return [...patch] as T;
+    }
+    return (patch ?? base) as T;
+  }
+
   const clone: any = Array.isArray(base) ? [...(base as any)] : { ...base };
   for (const [key, value] of Object.entries(patch || {})) {
     if (

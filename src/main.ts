@@ -34,7 +34,11 @@ function ensureAgentAssets(rootURI?: string): void {
   File.createFolder(copilotDir);
   File.createFile(
     File.join(copilotDir, "README.txt"),
-    `Extracted from bundle root: ${rootURI || ""}`,
+    [
+      "This folder stores extracted/copied GitHub Copilot agent assets for Zotero.",
+      `Source bundle root: ${rootURI || "unknown"}`,
+      "It is safe to delete this folder; it will be recreated on next startup.",
+    ].join("\n"),
   );
 }
 

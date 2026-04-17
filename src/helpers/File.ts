@@ -65,7 +65,7 @@ export class File {
     const nodeRequire = getNodeRequire();
     if (!nodeRequire) return;
     const fs = nodeRequire("node:fs/promises");
-    await fs.mkdir(path.split(/[\\/]/).slice(0, -1).join("/") || ".", {
+    await fs.mkdir(toPathParts(path).slice(0, -1).join("/") || ".", {
       recursive: true,
     });
     await fs.writeFile(path, content, "utf8");
