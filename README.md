@@ -1,3 +1,33 @@
+# Zotero GitHub Copilot Plugin
+
+This repository now contains a Zotero 9 bootstrap plugin scaffold that mirrors
+the architecture of `obsidian-github-copilot`:
+
+- `src/main.ts` bootstrap lifecycle hooks (`startup`, `shutdown`, `install`, `uninstall`)
+- `src/settings/SettingTab.tsx` typed settings + observer pattern + device-specific persistence
+- `src/copilot-chat/*` React 18 + Zustand chat UI/state
+- `src/copilot/CopilotAgent.ts` Copilot agent wrapper
+- `src/modal/AuthModal.tsx`, `src/status/StatusBar.ts`, `src/events/EventManager.ts`
+- `src/helpers/*` singleton logger + file/json/node helpers
+
+## Build
+
+```sh
+npm run build
+```
+
+Build uses `esbuild` and outputs a single bundled bootstrap entry:
+
+- `build/bootstrap.js`
+
+## Test
+
+```sh
+npm test
+```
+
+This runs a focused Mocha test suite for bootstrap exports and settings persistence.
+
 # Zotero Plugin Template
 
 [![zotero target version](https://img.shields.io/badge/Zotero-7-green?style=flat-square&logo=zotero&logoColor=CC2936)](https://www.zotero.org)
