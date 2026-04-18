@@ -30,7 +30,7 @@ describe("zotero copilot bootstrap and settings", function () {
   });
 
   it("registers and opens plugin preferences pane", function () {
-    assert.match(mainSource, /PreferencePanes\?\.register/);
+    assert.match(mainSource, /preferencePanes\?\.register/);
     assert.match(mainSource, /openPreferences\(PREFERENCE_PANE_ID\)/);
   });
 
