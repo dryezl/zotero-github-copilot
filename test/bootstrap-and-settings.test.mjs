@@ -32,6 +32,13 @@ describe("zotero copilot bootstrap and settings", function () {
   it("registers and opens plugin preferences pane", function () {
     assert.match(mainSource, /preferencePanes\?\.register/);
     assert.match(mainSource, /openPreferences\(PREFERENCE_PANE_ID\)/);
+    assert.match(mainSource, /export async function startup\(/);
+    assert.match(mainSource, /: any = \{\}\): Promise<void>/);
+    assert.match(
+      mainSource,
+      /const runtimeRootURI = getRuntimeRootURI\(rootURI\)/,
+    );
+    assert.match(mainSource, /const runtimeAddonID = getRuntimeAddonID\(id\)/);
   });
 
   it("configures esbuild bootstrap entry/output", function () {

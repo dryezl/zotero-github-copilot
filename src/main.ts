@@ -23,6 +23,7 @@ let authModal: AuthModal | null = null;
 let chatContainer: HTMLElement | null = null;
 const PREFERENCE_PANE_ID = "zotero-github-copilot-preferences";
 const PREFERENCE_CONTAINER_ID = "zotero-github-copilot-table-container";
+const ADDON_ID = "zotero-github-copilot@dryezl.com";
 
 const settingsObserver: SettingsObserver = {
   onSettingsUpdate(settings) {
@@ -43,6 +44,18 @@ async function registerPreferencePane(
     label: "Zotero GitHub Copilot",
     src: `${rootURI}content/preferences.xhtml`,
   });
+}
+
+function getRuntimeRootURI(rootURI?: string): string | undefined {
+  return (
+    rootURI ||
+    (globalThis as any).rootURI ||
+    (globalThis as any)._globalThis?.rootURI
+  );
+}
+
+function getRuntimeAddonID(addonID?: string): string {
+  return addonID || ADDON_ID;
 }
 
 function openPreferencePane(): boolean {
@@ -84,13 +97,19 @@ function ensureChatPanel(): HTMLElement | null {
   return panel as HTMLElement;
 }
 
-export async function startup({ id, version, rootURI }: any): Promise<void> {
+export async function startup({
+  id,
+  version,
+  rootURI,
+}: any = {}): Promise<void> {
   logger.log("startup", { id, version });
+  const runtimeRootURI = getRuntimeRootURI(rootURI);
+  const runtimeAddonID = getRuntimeAddonID(id);
 
   settingsTab = new SettingTab();
   settingsTab.registerObserver(settingsObserver);
   const settings = await settingsTab.loadSettings();
-  await registerPreferencePane(id, rootURI);
+  await registerPreferencePane(runtimeAddonID, runtimeRootURI);
 
   statusBar = new StatusBar();
   statusBar.init(() => {
@@ -101,7 +120,7 @@ export async function startup({ id, version, rootURI }: any): Promise<void> {
 
   logger.setDebugMode(settings.debug);
 
-  ensureAgentAssets(rootURI);
+  ensureAgentAssets(runtimeRootURI);
 
   copilotAgent = new CopilotAgent(
     () => settingsTab?.getSettings() || DEFAULT_SETTINGS,
