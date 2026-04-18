@@ -23,7 +23,12 @@ let authModal: AuthModal | null = null;
 let chatContainer: HTMLElement | null = null;
 const PREFERENCE_PANE_ID = "zotero-github-copilot-preferences";
 const PREFERENCE_CONTAINER_ID = "zotero-github-copilot-table-container";
-const ADDON_ID = "zotero-github-copilot@dryezl.com";
+
+interface StartupParams {
+  id?: string;
+  version?: string;
+  rootURI?: string;
+}
 
 const settingsObserver: SettingsObserver = {
   onSettingsUpdate(settings) {
@@ -32,11 +37,18 @@ const settingsObserver: SettingsObserver = {
 };
 
 async function registerPreferencePane(
-  addonID: string,
+  addonID?: string,
   rootURI?: string,
 ): Promise<void> {
   const preferencePanes = (globalThis as any).Zotero?.PreferencePanes;
-  if (!preferencePanes?.register || !rootURI) return;
+  if (!preferencePanes?.register || !rootURI || !addonID) {
+    logger.log("skip preference pane registration", {
+      hasRegister: Boolean(preferencePanes?.register),
+      hasRootURI: Boolean(rootURI),
+      hasAddonID: Boolean(addonID),
+    });
+    return;
+  }
 
   await preferencePanes.register({
     pluginID: addonID,
@@ -47,15 +59,16 @@ async function registerPreferencePane(
 }
 
 function getRuntimeRootURI(rootURI?: string): string | undefined {
-  return (
-    rootURI ||
-    (globalThis as any).rootURI ||
-    (globalThis as any)._globalThis?.rootURI
-  );
+  return rootURI || (globalThis as any).rootURI;
 }
 
-function getRuntimeAddonID(addonID?: string): string {
-  return addonID || ADDON_ID;
+function getRuntimeAddonID(addonID?: string): string | undefined {
+  // Zotero bootstrap runtime stores plugin metadata on __addonInstance__.data.
+  // This fallback allows preference registration even when lifecycle args are omitted.
+  const addonData = (globalThis as any).Zotero?.__addonInstance__?.data;
+  return (
+    addonID || addonData?.config?.addonID || addonData?.addonID || addonData?.id
+  );
 }
 
 function openPreferencePane(): boolean {
@@ -97,11 +110,8 @@ function ensureChatPanel(): HTMLElement | null {
   return panel as HTMLElement;
 }
 
-export async function startup({
-  id,
-  version,
-  rootURI,
-}: any = {}): Promise<void> {
+export async function startup(params: StartupParams = {}): Promise<void> {
+  const { id, version, rootURI } = params;
   logger.log("startup", { id, version });
   const runtimeRootURI = getRuntimeRootURI(rootURI);
   const runtimeAddonID = getRuntimeAddonID(id);
