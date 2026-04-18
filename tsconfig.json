@@ -1,5 +1,15 @@
 {
   "extends": "zotero-types/entries/sandbox/",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "module": "esnext",
+    "target": "es2022",
+    "lib": ["es2022", "dom"],
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "types": ["node"]
+  },
   "include": ["src", "typings"],
-  "exclude": ["build", "addon"]
+  "exclude": ["build", "addon", "node_modules"]
 }
