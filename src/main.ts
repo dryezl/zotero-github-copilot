@@ -1,6 +1,4 @@
 import { CopilotAgent } from "./copilot/CopilotAgent";
-import { CopilotChatApi } from "./copilot-chat/api/CopilotChatApi";
-import { ChatView } from "./copilot-chat/views/ChatView";
 import { EventManager } from "./events/EventManager";
 import { File } from "./helpers/File";
 import { logger } from "./helpers/Logger";
@@ -13,6 +11,7 @@ import {
 } from "./settings/SettingTab";
 import { StatusBar } from "./status/StatusBar";
 import { showZoteroNotice } from "./utils/notifications";
+import type { ChatView } from "./copilot-chat/views/ChatView";
 
 let settingsTab: SettingTab | null = null;
 let statusBar: StatusBar | null = null;
@@ -144,9 +143,13 @@ export async function startup(params: StartupParams = {}): Promise<void> {
   eventManager = new EventManager();
   eventManager.register();
 
-  chatView = new ChatView();
   chatContainer = ensureChatPanel();
   if (chatContainer && copilotAgent) {
+    const [{ ChatView }, { CopilotChatApi }] = await Promise.all([
+      import("./copilot-chat/views/ChatView"),
+      import("./copilot-chat/api/CopilotChatApi"),
+    ]);
+    chatView = new ChatView();
     const api = new CopilotChatApi(copilotAgent);
     chatView.mount({
       host: chatContainer,
