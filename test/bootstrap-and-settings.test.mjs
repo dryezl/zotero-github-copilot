@@ -44,6 +44,15 @@ describe("zotero copilot bootstrap and settings", function () {
     assert.match(mainSource, /skip preference pane registration/);
   });
 
+  it("registers runtime hooks on scaffold addon instance name", function () {
+    assert.match(mainSource, /zotero\.ZoteroGitHubCopilot/);
+    assert.match(mainSource, /zotero\.__addonInstance__/);
+    assert.match(
+      mainSource,
+      /addonInstance\.hooks = addonInstance\.hooks \|\|/,
+    );
+  });
+
   it("configures esbuild bootstrap entry/output", function () {
     assert.match(esbuildSource, /entryPoints:\s*\["src\/main.ts"\]/);
     assert.match(esbuildSource, /outfile:\s*"build\/bootstrap.js"/);
