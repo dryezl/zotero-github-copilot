@@ -7,6 +7,7 @@ describe("zotero copilot bootstrap and settings", function () {
   let mainSource = "";
   let settingsSource = "";
   let esbuildSource = "";
+  let manifestSource = "";
 
   before(function () {
     const repoRoot = path.resolve(process.cwd());
@@ -17,6 +18,10 @@ describe("zotero copilot bootstrap and settings", function () {
     );
     esbuildSource = fs.readFileSync(
       path.join(repoRoot, "esbuild.config.mjs"),
+      "utf8",
+    );
+    manifestSource = fs.readFileSync(
+      path.join(repoRoot, "addon/manifest.json"),
       "utf8",
     );
   });
@@ -43,6 +48,10 @@ describe("zotero copilot bootstrap and settings", function () {
     assert.match(esbuildSource, /entryPoints:\s*\["src\/main.ts"\]/);
     assert.match(esbuildSource, /outfile:\s*"build\/bootstrap.js"/);
     assert.match(esbuildSource, /target:\s*\["firefox115"\]/);
+  });
+
+  it("declares Zotero 9 compatibility in addon manifest", function () {
+    assert.match(manifestSource, /"strict_max_version": "9\.\*"/);
   });
 
   it("defines typed settings and device-specific persistence behavior", function () {
