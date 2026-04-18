@@ -217,15 +217,10 @@ export function onPrefsEvent(event: string, { window }: any): void {
 function registerAddonHooks(): void {
   const zotero = (globalThis as any).Zotero;
   if (!zotero) return;
-  const namedInstance = (zotero.ZoteroGitHubCopilot =
-    zotero.ZoteroGitHubCopilot || {
-      data: {},
-    });
-  const addonInstance = (zotero.__addonInstance__ =
-    zotero.__addonInstance__ || namedInstance);
-  if (zotero.ZoteroGitHubCopilot !== addonInstance) {
-    zotero.ZoteroGitHubCopilot = addonInstance;
-  }
+  const addonInstance = zotero.__addonInstance__ ||
+    zotero.ZoteroGitHubCopilot || { data: {} };
+  zotero.__addonInstance__ = addonInstance;
+  zotero.ZoteroGitHubCopilot = addonInstance;
   addonInstance.hooks = addonInstance.hooks || {
     onStartup: () => startup(),
     onShutdown: () => shutdown(),
