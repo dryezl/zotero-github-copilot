@@ -169,6 +169,12 @@ export async function startup(params: StartupParams = {}): Promise<void> {
   if (copilotAgent && settings.chatSettings.accessToken.token === null) {
     authModal = new AuthModal(copilotAgent, settingsTab);
   }
+
+  const addonInstance = (globalThis as any).Zotero?.__addonInstance__;
+  if (addonInstance) {
+    addonInstance.data = addonInstance.data || {};
+    addonInstance.data.initialized = true;
+  }
 }
 
 export function shutdown(): void {
@@ -186,6 +192,11 @@ export function shutdown(): void {
   statusBar = null;
   settingsTab = null;
   copilotAgent = null;
+
+  const addonInstance = (globalThis as any).Zotero?.__addonInstance__;
+  if (addonInstance?.data) {
+    addonInstance.data.initialized = false;
+  }
 }
 
 export function install(): void {
@@ -202,5 +213,23 @@ export function onPrefsEvent(event: string, { window }: any): void {
   if (!container) return;
   settingsTab.render(container);
 }
+
+function registerAddonHooks(): void {
+  const zotero = (globalThis as any).Zotero;
+  if (!zotero) return;
+  const addonInstance = (zotero.__addonInstance__ =
+    zotero.__addonInstance__ || {
+      data: {},
+    });
+  addonInstance.hooks = {
+    onStartup: () => startup(),
+    onShutdown: () => shutdown(),
+    onMainWindowLoad: async () => {},
+    onMainWindowUnload: async () => {},
+    onPrefsEvent: (event: string, payload: any) => onPrefsEvent(event, payload),
+  };
+}
+
+registerAddonHooks();
 
 export { SettingTab, DEFAULT_SETTINGS } from "./settings/SettingTab";
