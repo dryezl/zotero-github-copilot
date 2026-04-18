@@ -221,9 +221,11 @@ function registerAddonHooks(): void {
     zotero.__addonInstance__ || {
       data: {},
     });
-  addonInstance.hooks = {
+  addonInstance.hooks = addonInstance.hooks || {
     onStartup: () => startup(),
     onShutdown: () => shutdown(),
+    // Main-window hooks are intentionally no-op for this plugin because
+    // UI lifecycle is handled in startup/shutdown and prefs events.
     onMainWindowLoad: async () => {},
     onMainWindowUnload: async () => {},
     onPrefsEvent: (event: string, payload: any) => onPrefsEvent(event, payload),
