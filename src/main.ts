@@ -21,12 +21,37 @@ let chatView: ChatView | null = null;
 let copilotAgent: CopilotAgent | null = null;
 let authModal: AuthModal | null = null;
 let chatContainer: HTMLElement | null = null;
+const PREFERENCE_PANE_ID = "zotero-github-copilot-preferences";
+const PREFERENCE_CONTAINER_ID = "zotero-github-copilot-table-container";
 
 const settingsObserver: SettingsObserver = {
   onSettingsUpdate(settings) {
     logger.setDebugMode(settings.debug);
   },
 };
+
+async function registerPreferencePane(
+  addonID: string,
+  rootURI?: string,
+): Promise<void> {
+  const preferencePanes = (globalThis as any).Zotero?.PreferencePanes;
+  if (!preferencePanes?.register || !rootURI) return;
+
+  await preferencePanes.register({
+    pluginID: addonID,
+    id: PREFERENCE_PANE_ID,
+    label: "Zotero GitHub Copilot",
+    src: `${rootURI}content/preferences.xhtml`,
+  });
+}
+
+function openPreferencePane(): boolean {
+  const openPreferences = (globalThis as any).Zotero?.Utilities?.Internal
+    ?.openPreferences;
+  if (typeof openPreferences !== "function") return false;
+  openPreferences(PREFERENCE_PANE_ID);
+  return true;
+}
 
 function ensureAgentAssets(rootURI?: string): void {
   const profileDir = File.getProfileDir();
@@ -65,10 +90,13 @@ export async function startup({ id, version, rootURI }: any): Promise<void> {
   settingsTab = new SettingTab();
   settingsTab.registerObserver(settingsObserver);
   const settings = await settingsTab.loadSettings();
+  await registerPreferencePane(id, rootURI);
 
   statusBar = new StatusBar();
   statusBar.init(() => {
-    showZoteroNotice("Open Zotero GitHub Copilot settings from Preferences");
+    if (!openPreferencePane()) {
+      showZoteroNotice("Open Zotero GitHub Copilot settings from Preferences");
+    }
   });
 
   logger.setDebugMode(settings.debug);
@@ -134,6 +162,13 @@ export function install(): void {
 
 export function uninstall(): void {
   logger.log("uninstall");
+}
+
+export function onPrefsEvent(event: string, { window }: any): void {
+  if (event !== "load" || !settingsTab || !window?.document) return;
+  const container = window.document.getElementById(PREFERENCE_CONTAINER_ID);
+  if (!container) return;
+  settingsTab.render(container);
 }
 
 export { SettingTab, DEFAULT_SETTINGS } from "./settings/SettingTab";
